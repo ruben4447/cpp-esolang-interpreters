@@ -3,11 +3,11 @@
 #include <chrono>
 #include <cstdint>
 
-#include "lib/utils/files.cpp"
-#include "lib/utils/time_ms.cpp"
-#include "lib/brainfuck.cpp"
+#include "src/utils/files.cpp"
+#include "src/utils/time_ms.cpp"
+#include "src/brainfuck.cpp"
 
-#include "lib/brainfuck-substitution.cpp"
+#include "src/brainfuck-substitution.cpp"
 
 int main(int argc, char *argv[])
 {

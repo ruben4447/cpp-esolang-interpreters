@@ -3,16 +3,15 @@
 #include <chrono>
 #include <cstdint>
 
-#include "lib/utils/files.cpp"
-#include "lib/utils/time_ms.cpp"
-#include "lib/befunge.cpp"
+#include "src/utils/files.cpp"
+#include "src/utils/time_ms.cpp"
+#include "src/befunge.cpp"
 
-// int main(int argc, char *argv[])
-int main()
+int main(int argc, char *argv[])
+// int main()
 {
-    // char *c = argv[1];
-    // std::string filename(c);
-    std::string filename = "./examples/befunge/soe.bf";
+    std::string filename(argv[1]);
+    // std::string filename = "./examples/befunge/soe.bf";
     std::string program = get_file_contents(filename);
 
     std::chrono::milliseconds start = get_time_ms();

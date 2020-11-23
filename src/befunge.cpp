@@ -6,65 +6,61 @@
 
 #include "utils/string_funcs.cpp"
 
-// Type for stack processing
-typedef long num_t;
+// Code for befunge interpreter (nb h_xxx functions are helpers)
+namespace befunge {
+    // Type for stack processing
+    typedef long num_t;
 
-num_t pop(std::stack<num_t> *stack)
-{
-    if (stack->size() == 0)
-    {
-        return 0;
-    }
-    else
-    {
-        long tmp = stack->top();
+    // Helper to pop item of stack, or 0 if empty
+    num_t h_pop(std::stack<num_t> *stack) {
+        if (stack->empty()) return 0;
+        num_t tmp = stack->top();
         stack->pop();
         return tmp;
     }
-}
 
-// CHange movement vector
-void cmov(int* mrow, int* mcol, char c) {
-    if (c == '<') {
-        *mrow = 0;
-        *mcol = -1;
-    } else if (c == '>') {
-        *mrow = 0;
-        *mcol = 1;
-    } else if (c == '^') {
-        *mrow = -1;
-        *mcol = 0;
-    } else if (c == 'v') {
-        *mrow = 1;
-        *mcol = 0;
-    } else {
-        std::cout << "SYNTAX ERROR: Unknown movement operation: " << c << std::endl;
-        exit(1);
+    // CHange movement vector
+    void h_cmov(int* mrow, int* mcol, char c) {
+        if (c == '<') {
+            *mrow = 0;
+            *mcol = -1;
+        } else if (c == '>') {
+            *mrow = 0;
+            *mcol = 1;
+        } else if (c == '^') {
+            *mrow = -1;
+            *mcol = 0;
+        } else if (c == 'v') {
+            *mrow = 1;
+            *mcol = 0;
+        } else {
+            std::cout << "SYNTAX ERROR: Unknown movement operation: " << c << std::endl;
+            exit(1);
+        }
+        // cout << "Move Vector -> " << *mrow << ":" << *mcol << endl;
     }
-    // cout << "Move Vector -> " << *mrow << ":" << *mcol << endl;
-}
 
-void print(std::stack<num_t>* stack) {
-    std::stack<num_t> dump = *stack;
+    void h_print(std::stack<num_t>* stack) {
+        std::stack<num_t> dump = *stack;
 
-    std::cout << "stack[" << stack->size() << "] : ";
-    while (!dump.empty()) {
-        std::cout << dump.top() << " ";
-        dump.pop();
+        std::cout << "stack[" << stack->size() << "] : ";
+        while (!dump.empty()) {
+            std::cout << dump.top() << " ";
+            dump.pop();
+        }
     }
-}
 
-void checkstack(std::stack<num_t>* stack, int min, int row, int col) {
-    if (stack->size() < min) {
-        std::cout << "STACK ERROR: stack too small; expected " << min << " items, got " << stack->size() << ".";
-        std::cout << " (encountered at position " << row << ":" << col << ")" << std::endl;
+    void h_checkstack(std::stack<num_t>* stack, int min, int row, int col) {
+        if (stack->size() < min) {
+            std::cout << "STACK ERROR: stack too small; expected " << min << " items, got " << stack->size() << ".";
+            std::cout << " (encountered at position " << row << ":" << col << ")" << std::endl;
 
-        print(stack);
-        exit(1);
+            h_print(stack);
+            exit(1);
+        }
     }
-}
 
-namespace befunge {
+    // Interpret befunge program
     int interpret(std::string program, bool pad_lines = true) {
         std::vector<std::string> lines;
         int line_count = string_split(program, &lines, '\n'); // Split into list of lines
@@ -121,7 +117,7 @@ namespace befunge {
                 } else if (in_string) {
                     stack.push(c);
                 } else if (c >= '0' && c <= '9') {
-                    long n = c - 48; // Convetr char num to integer
+                    int n = c - 48; // Convetr char num to integer
                     stack.push(n);
                 } else if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
                     // No-op
@@ -129,41 +125,41 @@ namespace befunge {
                     break; // Stop program execution
                 } else if (c == '+') {
                     // Addition
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push(a + b);
                 } else if (c == '-') {
                     // Subtraction
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push(b - a);
                 } else if (c == '*') {
                     // Multiplication
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push(a * b);
                 } else if (c == '/') {
                     // Integer Division
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push(b / a);
                 } else if (c == '%') {
                     // Modulus
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push(b % a);
                 } else if (c == '!') {
                     // Logical Not
-                    num_t a = pop(&stack);
+                    num_t a = h_pop(&stack);
                     stack.push((a == 0) ? 1 : 0);
                 } else if (c == '`') {
                     // Greater Than: b > a
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push((b > a) ? 1 : 0);
                 } else if (c == '^' || c == '>' || c == '<' || c == 'v') {
                     // Move [up, right, left, down]
-                    cmov(&mrow, &mcol, c);
+                    h_cmov(&mrow, &mcol, c);
                 } else if (c == '?') {
                     // Move random direction
                     int n = rand() % 4; // Random number 0-4 (not inclusive)
@@ -173,15 +169,15 @@ namespace befunge {
                     else if (n == 2) op = '^';
                     else op = 'v';
 
-                    cmov(&mrow, &mcol, op);
+                    h_cmov(&mrow, &mcol, op);
                 } else if (c == '_') {
                     // Pop a value; move right if value=0, left otherwise
-                    num_t v = pop(&stack);
-                    cmov(&mrow, &mcol, (v == 0) ? '>' : '<');
+                    num_t v = h_pop(&stack);
+                    h_cmov(&mrow, &mcol, (v == 0) ? '>' : '<');
                 } else if (c == '|') {
                     //	Pop a value; move down if value=0, up otherwise
-                    num_t v = pop(&stack);
-                    cmov(&mrow, &mcol, (v == 0L) ? 'v' : '^');
+                    num_t v = h_pop(&stack);
+                    h_cmov(&mrow, &mcol, (v == 0L) ? 'v' : '^');
                 } else if (c == ':') {
                     // Duplicate top value
                     if (stack.size() == 0) {
@@ -191,23 +187,23 @@ namespace befunge {
                     }
                 } else if (c == '\\') {
                     // Swap top stack values
-                    num_t a = pop(&stack);
-                    num_t b = pop(&stack);
+                    num_t a = h_pop(&stack);
+                    num_t b = h_pop(&stack);
                     stack.push(a);
                     stack.push(b);
                 } else if (c == '$') {
                     // Remove value from top of stack
-                    checkstack(&stack, 1, row, col);
+                    h_checkstack(&stack, 1, row, col);
                     stack.pop();
                 } else if (c == '.') {
                     // Pop value, output as integer and space
-                    checkstack(&stack, 1, row, col);
+                    h_checkstack(&stack, 1, row, col);
                     num_t v = stack.top(); stack.pop();
                     std::cout << v << " ";
                 } else if (c == ',') {
                     // Output as ASCII
-                    checkstack(&stack, 1, row, col);
-                    int c = pop(&stack);
+                    h_checkstack(&stack, 1, row, col);
+                    int c = h_pop(&stack);
                     putchar(c);
                 } else if (c == '#') {
                     // Skip next cell
@@ -216,10 +212,10 @@ namespace befunge {
                 } else if (c == 'p') {
                     // A "put" call (a way to store a value for later use). Pop y, x, and v, then change the character at (x,y) in the program to the character with ASCII value v
                     // std::cout << "IMPLEMENTATION ERROR: put operator 'p' is not implemented" << std::endl;
-                    checkstack(&stack, 3, row, col);
-                    num_t y = pop(&stack);
-                    num_t x = pop(&stack);
-                    num_t v = pop(&stack);
+                    h_checkstack(&stack, 3, row, col);
+                    num_t y = h_pop(&stack);
+                    num_t x = h_pop(&stack);
+                    num_t v = h_pop(&stack);
                     std::cout << "Insert char at position " << x << "," << y << ": " << v << ": " << char(v) << std::endl;
 
                     if (y < 0 || y > line_count || x < 0 || x >= lines[y].length()) {
@@ -231,8 +227,8 @@ namespace befunge {
                 } else if (c == 'g') {
                     //	A "get" call (a way to retrieve data in storage). Pop y and x, then push ASCII value of the character at that position in the program
                     // std::cout << "IMPLEMENTATION ERROR: get operator 'g' is not implemented" << std::endl;
-                    num_t y = pop(&stack);
-                    num_t x = pop(&stack);
+                    num_t y = h_pop(&stack);
+                    num_t x = h_pop(&stack);
                     if (y < 0 || y > line_count || x < 0 || x >= lines[y].length()) {
                         // Out Of Bounds
                         stack.push(0);
