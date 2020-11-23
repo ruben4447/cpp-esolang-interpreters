@@ -28,11 +28,7 @@ int main(int argc, char *argv[])
     int code = brainfuck::to_brainfuck(program, &output, sub_type);
 
     std::string dest_file = ""; // Default: output
-    if (argc > 3) {
-        char *c = argv[3];
-        std::string tmp(c);
-        dest_file = c;
-    }
+    if (argc > 3) dest_file = std::string(argv[3]);
 
     if (code == 0) {
         std::cout << "----- [ PROGRAM ] ------" << std::endl;
